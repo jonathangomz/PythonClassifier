@@ -13,6 +13,8 @@ Date: 2017/09/24
 #########################
 '''
 
+import sys
+sys.path.insert(0, '/Users/Jonathan/Desktop/Jonathan/Programacion/Python/PythonForClass/machinelearning/Ch02/Classifier')
 from sklearn.neighbors import KNeighborsClassifier as kNN
 from sklearn import preprocessing
 import kNN as knn
@@ -23,8 +25,8 @@ import kNN as knn
 #########################
 '''
 
-########
-def act1(archivo="datingTestSet2.txt", neighbors=10):					#Train the program
+########                                                            #Train the program
+def act1(archivo="datingTestSet2.txt", neighbors=10):
   dataSetValue, dataSetLabel = knn.file2matrix(archivo)
    # print dataSetValue[0:20]
   valueNorm = preprocessing.normalize(dataSetValue, norm='l2')
@@ -33,8 +35,8 @@ def act1(archivo="datingTestSet2.txt", neighbors=10):					#Train the program
   neighbor.fit(valueNorm, dataSetLabel)
   return neighbor
 
-#########
-def onlyNum():      					#Check that only contains numbers
+#########                                                           #Check that only contains numbers
+def onlyNum():      					
   while True:
     texto = raw_input()
     try:
@@ -42,9 +44,9 @@ def onlyNum():      					#Check that only contains numbers
       break
     except ValueError:
       print "Solo se aceptan numeros"
-  return texto
+  return num
 
-########						#Check if the classifier works... i think so
+########                                                            #Check if the classifier works... i think so
 def check():
   var1 = n.predict([[40920, 8.326976, 0.953952]])
   var2 = n.predict([[14488, 7.153469, 1.673904]])
