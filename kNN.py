@@ -11,7 +11,7 @@ Output:     the most popular class label
 
 @author: pbharrin
 '''
-from numpy import hoRatio, zeros, shape, tile, array
+from numpy import *
 import operator
 from os import listdir
 
