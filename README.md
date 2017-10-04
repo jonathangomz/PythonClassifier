@@ -8,4 +8,4 @@ _2017/09/24_
 
 ### Info
 
-A little proyect for my IA's class.
+A little project for my IA's class.
