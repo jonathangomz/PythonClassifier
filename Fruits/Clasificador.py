@@ -6,7 +6,11 @@ Created on Thu Sep 28 10:50:30 2017
 @author: Jonathan
 """
 # Labels:
-# Redness	Yellowness	Mass	   Volumen 	Class
+# Redness	
+# Yellowness	
+# Mass	   
+# Volumen 	
+# Class
 #
 #
 #######################################################################

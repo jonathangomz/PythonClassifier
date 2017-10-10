@@ -55,19 +55,34 @@ def sizes(filename, check=False):
         elif '\t' in fr.readline():
             numColumn = len(fr.readline().strip().split('\t'))-1
         else:
-            print("Error en el formato: Los datos deben de estar separados por Coma o Tab [6]")
+            print("Error en el formato: Los datos deben de estar separados por Coma o Tab [3]")
         fr        = open(filename)
         numLines  = len(fr.readlines())
         fr.close()
         return numLines, numColumn
     else:
-        print "Error con el formato[7]"
+        print "Error con el formato [4]"
         return 0,0
+ 
+def saveHeaders(filename):
+    isOkH, headerLine = checkHeader(filename)
+    if isOkH:
+        f = open('Headers.txt', 'w+')
+        for tH in headerLine:
+            f.write(' %s ' %tH)
+        f.close()
+        return True
+    else:
+        print("Hubo un error con el chequeo [5]")
+        return False
+
     
 #######################################################################
 ################################ INPUT ################################
 #######################################################################
     
+#Ask if the table have headers. 
+#>>Anyway we will check the headers, the user can be an asshole.<< 
 def askHeader():
     ans = raw_input("¿Tu archivo tiene los titulos de las columnas?(y/n)\n")
     while True:
@@ -97,7 +112,7 @@ def inputTH(filename=None):
             mtx += [[0 for x in range(len(mtx[0]))]]
             return mtx
         else:
-            print "Error con el formato"
+            print "Error con el formato [6]"
             return 0
     else:
         i = 0
@@ -116,13 +131,26 @@ def inputTH(filename=None):
 ################################ CHECK ################################
 #######################################################################    
 
-def checkHeaders(filename):
-    print "Hello"
-        
-def checkHeader(filename):
-    fr          = open(filename)
-    headerLine   = fr.readline()
-    return headerLine
+#Check the table header(*CHECK*)
+def checkHeader(filename, check=False):
+    isOk = True
+    if check:
+        isOk,sptr = checkFormat(filename)
+    else:
+        _,sptr = checkFormat(filename)
+    if isOk:
+        fr           = open(filename)
+        headerLine   = fr.readline().strip().split(sptr)
+        for i in headerLine:
+            try:
+                float(i)
+                print "Hey there! You have a number like header,\nand thats supicious. [7]"
+                return False, headerLine
+            except:
+                pass
+        return True, headerLine
+    else:
+        print("Ocurrió un error con el formato [8]")
 
 #Verify if are separated by Coma or Tab and return the type of separator
 def checkFormat(filename):
@@ -130,7 +158,7 @@ def checkFormat(filename):
         fr = open(filename)
         if ',' not in fr.readline() and '\t' not in fr.readline():
             fr.close()
-            print("Error en el formato: Los datos deben de estar separados por Coma o Tab [4]")
+            print("Error en el formato: Los datos deben de estar separados por Coma o Tab [9]")
             return False
         else:
             if ',' in fr.readline():
@@ -140,7 +168,7 @@ def checkFormat(filename):
                 fr.close()
                 return True, '\t'
     except Exception, e:
-        print('Ocurrio un error al leer el archivo. [5] ',e)
+        print('Ocurrio un error al leer el archivo. [10] ',e)
         return False, 0
     
 #Verify that the input value is a number
