@@ -42,7 +42,7 @@ def file2matrix(filename):
         print "No pasó el chequeo del formato [2]"
         return 0, 0
     
-#Return num of columns and lines
+#Returns the number of columns and rows
 def sizes(filename, check=False):
     isOk = True
     if check:
