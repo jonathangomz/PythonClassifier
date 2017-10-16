@@ -20,18 +20,29 @@ import numpy as np
 
 #Pass the data from file to an matrix
 def file2matrix(filename):
+    v, l = file2matrixStr(filename)
+    if v != 0 and l != 0:
+        v = str2float(v)
+        return v, l
+    else:
+        print("Error: 0 columnas [1.1]")
+        return 0,0
+
+##########################################################################################
+        
+def file2matrixStr(filename):
     chk, frm = checkFormat(filename)
     if chk:
         numLines, numColumn = sizes(filename)
         if numColumn != 0:
-            classData = np.zeros((numLines,numColumn))     
+            classData = []  
             classLabel = []                        
             fr = open(filename)
             index = 0
             for line in fr.readlines():
                 line = line.strip()
                 listFromLine = line.split(frm)
-                classData[index,:] = listFromLine[0:numColumn]
+                classData.append(listFromLine[0:numColumn])
                 classLabel.append(listFromLine[-1])
                 index += 1
             return classData,classLabel
@@ -42,32 +53,93 @@ def file2matrix(filename):
         print "No pasó el chequeo del formato [2]"
         return 0, 0
     
+def wrd2num(values):
+    vCu = []                            #value Clean unorder
+    valuesCleanOrder = []
+    dic = []
+    for i in range(len(values[0])):
+        arr = [t[i] for t in values]
+        dicVal = {}
+        arr2 = []
+        count = 0
+        for t in arr:
+            if t not in dicVal:
+                if t == '':
+                    arr2.append(0)
+                else:
+                    arr2.append(count+1)
+                    dicVal[t] = count+1
+                    count += 1
+            else:
+                arr2.append(dicVal[t])
+        dic.append(dicVal)
+        vCu.append(arr2)
+    tupO = zip(*vCu[::-1])
+    arrT = []
+    for i in tupO:
+        arrT = [t for t in reversed(i)]
+        valuesCleanOrder.append(arrT)
+    return valuesCleanOrder, dic
+
+#
+def str2float(values):
+    y = 0
+    v = [i[:] for i in values]
+    for i in v:
+        x = 0
+        for t in i:
+            v[y][x] = float(t)
+            x += 1
+        y += 1
+    return v
+
+
+##########################################################################################
+    
 #Returns the number of columns and rows
-def sizes(filename, check=False):
+def sizes(filename, countColumn = True, countRows=True, check=False):
     isOk = True
     if check:
         isOk,_ = checkFormat(filename)
     if isOk:
         fr        = open(filename)
         numColumn = 0
-        if ',' in fr.readline():
-            numColumn = len(fr.readline().strip().split(','))-1
-        elif '\t' in fr.readline():
-            numColumn = len(fr.readline().strip().split('\t'))-1
-        else:
-            print("Error en el formato: Los datos deben de estar separados por Coma o Tab [6]")
-        fr        = open(filename)
-        numLines  = len(fr.readlines())
+        numLines  = 0
+        if countColumn:
+            if ',' in fr.readline():
+                numColumn = len(fr.readline().strip().split(','))-1
+            elif '\t' in fr.readline():
+                numColumn = len(fr.readline().strip().split('\t'))-1
+            else:
+                print("Error en el formato: Los datos deben de estar separados por Coma o Tab [3]")
+        if countRows:
+            fr        = open(filename)
+            numLines  = len(fr.readlines())
         fr.close()
         return numLines, numColumn
     else:
-        print "Error con el formato[7]"
+        print "Error con el formato [4]"
         return 0,0
+ 
+def saveHeaders(filename):
+    isOkH, headerLine = checkHeader(filename)
+    if isOkH:
+        f = open('Headers.txt', 'w+')
+        for tH in headerLine:
+            f.write(' %s ' %tH)
+        f.close()
+        return True
+    else:
+        print("Hubo un error con el chequeo [5]")
+        return False
+
     
 #######################################################################
 ################################ INPUT ################################
 #######################################################################
     
+#Ask if the table have headers. 
+#>>Anyway we will check the headers, the user can be an asshole.<< 
 def askHeader():
     ans = raw_input("¿Tu archivo tiene los titulos de las columnas?(y/n)\n")
     while True:
@@ -97,7 +169,7 @@ def inputTH(filename=None):
             mtx += [[0 for x in range(len(mtx[0]))]]
             return mtx
         else:
-            print "Error con el formato"
+            print "Error con el formato [6]"
             return 0
     else:
         i = 0
@@ -116,13 +188,26 @@ def inputTH(filename=None):
 ################################ CHECK ################################
 #######################################################################    
 
-def checkHeaders(filename):
-    print "Hello"
-        
-def checkHeader(filename):
-    fr          = open(filename)
-    headerLine   = fr.readline()
-    return headerLine
+#Check the table header(*CHECK*)
+def checkHeader(filename, check=False):
+    isOk = True
+    if check:
+        isOk,sptr = checkFormat(filename)
+    else:
+        _,sptr = checkFormat(filename)
+    if isOk:
+        fr           = open(filename)
+        headerLine   = fr.readline().strip().split(sptr)
+        for i in headerLine:
+            try:
+                float(i)
+                print "Hey there! You have a number like header,\nand thats supicious. [7]"
+                return False, headerLine
+            except:
+                pass
+        return True, headerLine
+    else:
+        print("Ocurrió un error con el formato [8]")
 
 #Verify if are separated by Coma or Tab and return the type of separator
 def checkFormat(filename):
@@ -130,7 +215,7 @@ def checkFormat(filename):
         fr = open(filename)
         if ',' not in fr.readline() and '\t' not in fr.readline():
             fr.close()
-            print("Error en el formato: Los datos deben de estar separados por Coma o Tab [4]")
+            print("Error en el formato: Los datos deben de estar separados por Coma o Tab [9]")
             return False
         else:
             if ',' in fr.readline():
@@ -140,7 +225,7 @@ def checkFormat(filename):
                 fr.close()
                 return True, '\t'
     except Exception, e:
-        print('Ocurrio un error al leer el archivo. [5] ',e)
+        print('Ocurrio un error al leer el archivo. [10] ',e)
         return False, 0
     
 #Verify that the input value is a number
@@ -156,4 +241,4 @@ def onlyNum(count=None):
         except ValueError:
             print "Solo se aceptan numeros"
     return num
-    
+        
