@@ -104,6 +104,7 @@ def sizes(filename, countColumn = True, countRows=True, check=False):
     if isOk:
         fr        = open(filename)
         numColumn = 0
+<<<<<<< HEAD
         numLines  = 0
         if countColumn:
             if ',' in fr.readline():
@@ -115,6 +116,16 @@ def sizes(filename, countColumn = True, countRows=True, check=False):
         if countRows:
             fr        = open(filename)
             numLines  = len(fr.readlines())
+=======
+        if ',' in fr.readline():
+            numColumn = len(fr.readline().strip().split(','))-1
+        elif '\t' in fr.readline():
+            numColumn = len(fr.readline().strip().split('\t'))-1
+        else:
+            print("Error en el formato: Los datos deben de estar separados por Coma o Tab [3]")
+        fr        = open(filename)
+        numLines  = len(fr.readlines())
+>>>>>>> cca4c19f258bdec88c7da7149cbcff842b761160
         fr.close()
         return numLines, numColumn
     else:
