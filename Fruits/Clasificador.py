@@ -4,6 +4,13 @@
 Created on Thu Sep 28 10:50:30 2017
 
 @author: Jonathan
+
+NOTES:
+* guardar headers
+* quitarlos de la matrix >>> regresarlos (return) en la función
+* introducirlos en la función que pregunta los headers para que
+   que los coloque automaticamente
+    
 """
 # Labels:
 # Redness	

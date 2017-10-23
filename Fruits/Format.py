@@ -135,10 +135,10 @@ def saveHeaders(filename):
         for tH in headerLine:
             f.write(' %s ' %tH)
         f.close()
-        return True
+        return True, headerLine
     else:
         print("Hubo un error con el chequeo [5]")
-        return False
+        return False, 0
 
     
 #######################################################################
@@ -160,36 +160,39 @@ def askHeader():
             print("No se reconoce la respuesta")
         ans = raw_input("¿Tu archivo tiene los titulos de las columnas?(y/n)\n")
         
-#To know the TH (Table Headers)
-def inputTH(filename=None):
-    mtx = []
+#To know the TH (Table Headers) - Se podrá introducir una lista con los headers que se obtienen en saveHeader()
+def inputTH(filename=None, mtx=[]):
     lst = []
-    if filename is not None:
-        isOk,_ = checkFormat(filename)
-        if isOk:
-            _,numTH = sizes(filename)
-            i = 0
-            while i < numTH:
-                i += 1
-                lst.append(raw_input("¿De que tipo será tu %i valor?\n"%i))
-            mtx += [lst]
-            mtx += [[0 for x in range(len(mtx[0]))]]
-            return mtx
-        else:
-            print "Error con el formato [6]"
-            return 0
-    else:
-        i = 0
-        while True:
-            txt = raw_input("¿De que tipo será tu %i valor?\n" % (i+1))
-            lst.append(txt)
-            i += 1
-            ans = (raw_input("¿Terminaste de ingresar los tipos? [y]\n"))
-            if ans == 'Y' or ans == 'y':
+    if not mtx:
+        if filename is not None:
+            isOk,_ = checkFormat(filename)
+            if isOk:
+                _,numTH = sizes(filename)
+                i = 0
+                while i < numTH:
+                    i += 1
+                    lst.append(raw_input("¿De que tipo será tu %i valor?\n"%i))
                 mtx += [lst]
-                txt += [[0 for x in range(len(mtx[0]))]]
+                mtx += [[0 for x in range(len(mtx[0]))]]
                 return mtx
-                break
+            else:
+                print "Error con el formato [6]"
+                return 0
+        else:
+            i = 0
+            while True:
+                txt = raw_input("¿De que tipo será tu %i valor?\n" % (i+1))
+                lst.append(txt)
+                i += 1
+                ans = (raw_input("¿Terminaste de ingresar los tipos? [y]\n"))
+                if ans == 'Y' or ans == 'y':
+                    mtx += [lst]
+                    mtx += [[0 for x in range(len(mtx[0]))]]
+                    return mtx
+                    break
+    else:
+        mtx += [[0 for x in range(len(mtx[0]))]]
+        return mtx
       
 #######################################################################
 ################################ CHECK ################################
@@ -199,9 +202,9 @@ def inputTH(filename=None):
 def checkHeader(filename, check=False):
     isOk = True
     if check:
-        isOk,sptr = checkFormat(filename)
+        isOk,sptr = checkFormat(filename)   #return if its ok and type of separator
     else:
-        _,sptr = checkFormat(filename)
+        _,sptr = checkFormat(filename)      #only return the type of separator
     if isOk:
         fr           = open(filename)
         headerLine   = fr.readline().strip().split(sptr)
@@ -212,7 +215,7 @@ def checkHeader(filename, check=False):
                 return False, headerLine
             except:
                 pass
-        return True, headerLine
+        return True, [headerLine]
     else:
         print("Ocurrió un error con el formato [8]")
 
