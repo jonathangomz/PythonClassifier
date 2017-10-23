@@ -39,6 +39,7 @@ def file2matrixStr(filename):
             classLabel = []                        
             fr = open(filename)
             index = 0
+            fr.readline()
             for line in fr.readlines():
                 line = line.strip()
                 listFromLine = line.split(frm)
