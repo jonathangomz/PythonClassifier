@@ -63,13 +63,19 @@ def wrd2num(values):
         arr2 = []
         count = 0
         for t in arr:
-            if t not in dicVal:
-                if t == '':
+            try:
+                t = float(t)
+            except:
+                pass
+            if t not in dicVal and not isinstance(t, float):
+                if t == '':             #if contains an empty space change it with cero
                     arr2.append(0)
                 else:
                     arr2.append(count+1)
                     dicVal[t] = count+1
                     count += 1
+            elif isinstance(t, float):  #if is a number dont change it
+                arr2.append(t)
             else:
                 arr2.append(dicVal[t])
         dic.append(dicVal)
@@ -216,7 +222,7 @@ def checkFormat(filename):
         if ',' not in fr.readline() and '\t' not in fr.readline():
             fr.close()
             print("Error en el formato: Los datos deben de estar separados por Coma o Tab [9]")
-            return False
+            return False, 0
         else:
             if ',' in fr.readline():
                 fr.close()
