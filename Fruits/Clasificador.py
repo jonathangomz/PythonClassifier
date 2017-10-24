@@ -11,8 +11,6 @@ Created on Thu Sep 28 10:50:30 2017
 # Mass	   
 # Volumen 	
 # Class
-#
-#
 #######################################################################
 ############################### IMPORTS ###############################
 #######################################################################
@@ -20,8 +18,8 @@ Created on Thu Sep 28 10:50:30 2017
 import sys
 sys.path.insert(0, '/Users/Jonathan/Desktop/Jonathan/Programacion/Python/PythonForClass/machinelearning/Ch02/Classifier')
 import numpy as np
-from sklearn.neighbors import KNeighborsClassifier as kNN
-from sklearn import preprocessing
+from sklearn.neighbors import KNeighborsClassifier as kNN 
+from sklearn import preprocessing, tree
 import Format as Frm
 
 ####################################################################################################
@@ -71,6 +69,12 @@ def classifyKNN(neighbor, v2c):
 """
             logRegres, Tree, Bayes
 """
+
+def treeClas(dataValue, dataLabel, v2c):
+    treecls = tree.DecisionTreeClassifier()
+    treecls = treecls.fit(dataValue, dataLabel)
+    ans = treecls.predict([v2c])
+    return ans
 
 #####################################################################
 ############################### Extras ##############################
