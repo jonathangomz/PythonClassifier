@@ -6,6 +6,7 @@ Created on Fri Oct 6 14:09:01 2017
 @author: Jonathan
 """
 #   WARNING: Functions with (*) aren't ready
+# NOTE: Still rest fix the type in the funtion seeAll() in class Document
 
 
 #######################################################################
@@ -18,18 +19,19 @@ import numpy as np
 ########################### MAIN FUNCTIONS ############################
 #######################################################################
 
-#Pass the data from file to an matrix
+#Pass the data from file to a matrix using other three functions.
 def file2matrix(filename):
     v, l = file2matrixStr(filename)
     if v != 0 and l != 0:
+        v,dic = wrd2num(v)
         v = str2float(v)
-        return v, l
+        return v, l, dic
     else:
         print("Error: 0 columnas [1.1]")
         return 0,0
 
-##########################################################################################
-        
+#######################################################################
+#Make, with the file, a matrix with the values of type str.
 def file2matrixStr(filename):
     chk, frm = checkFormat(filename)
     if chk:
@@ -39,7 +41,6 @@ def file2matrixStr(filename):
             classLabel = []                        
             fr = open(filename)
             index = 0
-            fr.readline()
             for line in fr.readlines():
                 line = line.strip()
                 listFromLine = line.split(frm)
@@ -53,7 +54,8 @@ def file2matrixStr(filename):
     else:
         print "No pasó el chequeo del formato [2]"
         return 0, 0
-    
+
+#Change the words in the file to numbers 
 def wrd2num(values):
     vCu = []                            #value Clean unorder
     valuesCleanOrder = []
@@ -88,7 +90,7 @@ def wrd2num(values):
         valuesCleanOrder.append(arrT)
     return valuesCleanOrder, dic
 
-#
+#change the type of the values to float
 def str2float(values):
     y = 0
     v = [i[:] for i in values]
@@ -140,7 +142,6 @@ def saveHeaders(filename):
         print("Hubo un error con el chequeo [5]")
         return False, 0
 
-    
 #######################################################################
 ################################ INPUT ################################
 #######################################################################
@@ -160,25 +161,25 @@ def askHeader():
             print("No se reconoce la respuesta")
         ans = raw_input("¿Tu archivo tiene los titulos de las columnas?(y/n)\n")
         
-#To know the TH (Table Headers) - Se podrá introducir una lista con los headers que se obtienen en saveHeader()
+#To know the TH (Table Headers)
 def inputTH(filename=None, mtx=[]):
     lst = []
-    if not mtx:
-        if filename is not None:
+    if not mtx:         # si no se introduce matriz con th ejecutará cualquiera de las otras dos opciones
+        if filename is not None:    #si se introuce un documento puede saber cuantos values se introducirán por su no. de columnas
             isOk,_ = checkFormat(filename)
-            if isOk:
+            if isOk:        #checa que este bien el formato del archivo
                 _,numTH = sizes(filename)
                 i = 0
                 while i < numTH:
                     i += 1
                     lst.append(raw_input("¿De que tipo será tu %i valor?\n"%i))
-                mtx += [lst]
-                mtx += [[0 for x in range(len(mtx[0]))]]
+                mtx += [lst]    #agrega la lista de nombres(*)
+                mtx += [[0 for x in range(len(mtx[0]))]]    #agrega una lista vacía donde irán los valores de cada feature(**)
                 return mtx
             else:
                 print "Error con el formato [6]"
                 return 0
-        else:
+        else:               #si no se introduce archivo preguntará infinitamente hasta que el usuario termine de ingresar las features
             i = 0
             while True:
                 txt = raw_input("¿De que tipo será tu %i valor?\n" % (i+1))
@@ -186,12 +187,12 @@ def inputTH(filename=None, mtx=[]):
                 i += 1
                 ans = (raw_input("¿Terminaste de ingresar los tipos? [y]\n"))
                 if ans == 'Y' or ans == 'y':
-                    mtx += [lst]
-                    mtx += [[0 for x in range(len(mtx[0]))]]
+                    mtx += [lst]            #lo mismo que en (*)
+                    mtx += [[0 for x in range(len(mtx[0]))]]    #lo mismo que en (**)
                     return mtx
                     break
-    else:
-        mtx += [[0 for x in range(len(mtx[0]))]]
+    else:   #si se introduce la lista de nombres no es necesario que el usuario los introduzca
+        mtx += [[0 for x in range(len(mtx[0]))]]    #lo mismo que en (*)
         return mtx
       
 #######################################################################
@@ -202,9 +203,9 @@ def inputTH(filename=None, mtx=[]):
 def checkHeader(filename, check=False):
     isOk = True
     if check:
-        isOk,sptr = checkFormat(filename)   #return if its ok and type of separator
+        isOk,sptr = checkFormat(filename)   #return if its ok and type of separator (sptr)
     else:
-        _,sptr = checkFormat(filename)      #only return the type of separator
+        _,sptr = checkFormat(filename)      #only return the type of separator (sptr)
     if isOk:
         fr           = open(filename)
         headerLine   = fr.readline().strip().split(sptr)
@@ -212,12 +213,15 @@ def checkHeader(filename, check=False):
             try:
                 float(i)
                 print "Hey there! You have a number like header,\nand thats supicious. [7]"
-                return False, headerLine
+                fr.close()
+                return False, [headerLine]
             except:
                 pass
+        fr.close()
         return True, [headerLine]
     else:
         print("Ocurrió un error con el formato [8]")
+        fr.close()
 
 #Verify if are separated by Coma or Tab and return the type of separator
 def checkFormat(filename):
@@ -251,4 +255,58 @@ def onlyNum(count=None):
         except ValueError:
             print "Solo se aceptan numeros"
     return num
-        
+
+#################################################################################################
+#################################################################################################     
+##################################                             ##################################
+##################################       Clase Documento       ##################################
+##################################                             ##################################
+#################################################################################################
+#################################################################################################
+"""
+
+    La clase Documento representa al documento que se usará para entrenar
+    el clasificador.
+    
+    Utiliza los métodos en este archivo para crear sus atributos iguales
+    a los del archivo pero formateados listos para clasificar.
+
+"""
+class Documento:
+    """Documento formateado para clasificar"""
+    def __init__(self, nameFile=None):
+        if nameFile is None:
+            self.width          = 0
+            self.height         = 0
+            self.tableHeaders   = []
+            self.values         = []
+            self.dic            = {}
+            self.labels         = []
+        else:
+            isOk,_          = checkFormat(nameFile)
+            self.filename   = nameFile
+            if isOk:
+                self.filename               = nameFile
+                self.width, self.height     = sizes(self.filename)
+                if askHeader():
+                    tableHeadersAreOk, headers = checkHeader(self.filename)
+                    if tableHeadersAreOk:
+                        self.tableHeaders = inputTH(_,headers)
+                    else:
+                        self.tableHeaders = inputTH(self.filename)
+                else:
+                    tableHeaders = inputTH()
+                try:
+                    self.values, self.labels, self.dic = file2matrix(self.filename)
+                except Exception, e:
+                    print("Error al obtener valores y etiquetas. [Documento]", e[0])
+            #else:
+                #self.width          = 0
+                #self.height         = 0
+                #self.tableHeaders   = []
+                #self.values         = []
+                #self.dic            = {}
+                #self.labels         = []
+    def seeAll(self):
+        for i in self.__dict__:
+            print(str(i)+"\t\t "+str(self.__dict__[i])+"\t "+str(type(i)))

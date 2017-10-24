@@ -4,13 +4,6 @@
 Created on Thu Sep 28 10:50:30 2017
 
 @author: Jonathan
-
-NOTES:
-* guardar headers
-* quitarlos de la matrix >>> regresarlos (return) en la función
-* introducirlos en la función que pregunta los headers para que
-   que los coloque automaticamente
-    
 """
 # Labels:
 # Redness	
@@ -31,21 +24,24 @@ from sklearn.neighbors import KNeighborsClassifier as kNN
 from sklearn import preprocessing
 import Format as Frm
 
-#######################################################################
-########################### MAIN FUNCTIONS ############################
-#######################################################################
-        
+####################################################################################################
+####################################################################################################
+################################                                    ################################
+################################           MAIN FUNCTIONS           ################################
+################################                                    ################################
+####################################################################################################
+####################################################################################################
+
+"""
+            KNeighborsClassifier
+"""  
+
 #Train the program
 def trainWithData(dataValue, dataLabel, n=10):
     valueNorm = preprocessing.normalize(dataValue, norm='l2')
     neighbor = kNN(n_neighbors=n)
     neighbor.fit(valueNorm, dataLabel)
     return neighbor
-
-#Well... this don't need explain
-def classify(neighbor, v2c):
-    ans = neighbor.predict([v2c])
-    return ans
 
 #Introduce the values to classify
 def inputValuesToClassify(mtx=None):
@@ -62,20 +58,33 @@ def inputValuesToClassify(mtx=None):
             except Exception, e:
                 print "Ingresa un valor válido con números. Error [3]"
     else:
-        for typeValue in range(len(mtx[0])):
+        for typeValue in range(len(mtx[0])-1):
             mtx[1][typeValue] = Frm.onlyNum(mtx[0][typeValue])
             valuesToClassify.append(mtx[1][typeValue])
     return valuesToClassify
-                  
-#Run all functions
-def runProgram(filename="testFruit.csv"):
-    values, labels  = Frm.file2matrix(filename)
-    mtxTypes        = Frm.inputTH(filename)
-    n               = trainWithData(values, labels)
-    v2c             = inputValuesToClassify(mtxTypes)
-    r               = classify(n, v2c)
-    return r
-    
+
+#Well... this don't need explain
+def classifyKNN(neighbor, v2c):
+    ans = neighbor.predict([v2c])
+    return ans                
+
+"""
+            logRegres, Tree, Bayes
+"""
+
+#####################################################################
+############################### Extras ##############################
+#####################################################################
+
+#Learn with input values
+"""
+             Not ready YET 
+    Add more classifiers to do better
+"""
+def learn(v2l, l2l, values, labels):
+    labels += [l2l[0]]
+    values = np.vstack((values, v2l))
+
 ######################## In waitlist ########################
 #                                                           #
 #    def rejectOutliersFromList(data, m = 2.):              #
@@ -90,16 +99,4 @@ def runProgram(filename="testFruit.csv"):
 #            dataSet[:,i] = rejectOutliersFromList(column)  #
 #                                                           #
 #############################################################
-
-
-#####################################################################
-############################### Extras ##############################
-#####################################################################
-
-#Learn with input values
-""""""" Not ready YET """""""
-#Add more classifiers to do better
-def learn(v2l, l2l, values, labels):
-    labels += [l2l[0]]
-    values = np.vstack((values, v2l))
     
