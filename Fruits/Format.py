@@ -20,8 +20,8 @@ import numpy as np
 #######################################################################
 
 #Pass the data from file to a matrix using other three functions.
-def file2matrix(filename):
-    v, l = file2matrixStr(filename)
+def file2matrix(filename, quitHeaders=False):
+    v, l = file2matrixStr(filename, quitHeaders)
     if v != 0 and l != 0:
         v,dic = wrd2num(v)
         v = str2float(v)
@@ -32,7 +32,7 @@ def file2matrix(filename):
 
 #######################################################################
 #Make, with the file, a matrix with the values of type str.
-def file2matrixStr(filename):
+def file2matrixStr(filename, quitHeaders=False):
     chk, frm = checkFormat(filename)
     if chk:
         numLines, numColumn = sizes(filename)
@@ -40,6 +40,9 @@ def file2matrixStr(filename):
             classData = []  
             classLabel = []                        
             fr = open(filename)
+            print(quitHeaders)
+            if quitHeaders:
+                fr.readline()
             index = 0
             for line in fr.readlines():
                 line = line.strip()
@@ -174,7 +177,7 @@ def inputTH(filename=None, mtx=[]):
                     i += 1
                     lst.append(raw_input("¿De que tipo será tu %i valor?\n"%i))
                 mtx += [lst]    #agrega la lista de nombres(*)
-                mtx += [[0 for x in range(len(mtx[0]))]]    #agrega una lista vacía donde irán los valores de cada feature(**)
+                mtx += [[0 for x in range(len(mtx[0])-1)]]    #agrega una lista vacía donde irán los valores de cada feature(**)
                 return mtx
             else:
                 print "Error con el formato [6]"
@@ -188,11 +191,11 @@ def inputTH(filename=None, mtx=[]):
                 ans = (raw_input("¿Terminaste de ingresar los tipos? [y]\n"))
                 if ans == 'Y' or ans == 'y':
                     mtx += [lst]            #lo mismo que en (*)
-                    mtx += [[0 for x in range(len(mtx[0]))]]    #lo mismo que en (**)
+                    mtx += [[0 for x in range(len(mtx[0])-1)]]    #lo mismo que en (**)
                     return mtx
                     break
     else:   #si se introduce la lista de nombres no es necesario que el usuario los introduzca
-        mtx += [[0 for x in range(len(mtx[0]))]]    #lo mismo que en (*)
+        mtx += [[0 for x in range(len(mtx[0])-1)]]    #lo mismo que en (**)
         return mtx
       
 #######################################################################
@@ -278,7 +281,7 @@ class Documento:
         if nameFile is None:
             self.width          = 0
             self.height         = 0
-            self.tableHeaders   = []
+            self.features       = []
             self.values         = []
             self.dic            = {}
             self.labels         = []
@@ -288,16 +291,17 @@ class Documento:
             if isOk:
                 self.filename               = nameFile
                 self.width, self.height     = sizes(self.filename)
-                if askHeader():
-                    tableHeadersAreOk, headers = checkHeader(self.filename)
+                tableHeadersAreOk, headers = checkHeader(self.filename)
+                if askHeader():                    
                     if tableHeadersAreOk:
-                        self.tableHeaders = inputTH(_,headers)
+                        self.features = inputTH(_,headers)
                     else:
-                        self.tableHeaders = inputTH(self.filename)
+                        self.features = inputTH(self.filename)
                 else:
-                    tableHeaders = inputTH()
+                    features = inputTH()
                 try:
-                    self.values, self.labels, self.dic = file2matrix(self.filename)
+                    print(tableHeadersAreOk)
+                    self.values, self.labels, self.dic = file2matrix(self.filename, tableHeadersAreOk)
                 except Exception, e:
                     print("Error al obtener valores y etiquetas. [Documento]", e[0])
             #else:

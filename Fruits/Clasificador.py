@@ -56,9 +56,9 @@ def inputValuesToClassify(mtx=None):
             except Exception, e:
                 print "Ingresa un valor válido con números. Error [3]"
     else:
-        for typeValue in range(len(mtx[0])-1):
-            mtx[1][typeValue] = Frm.onlyNum(mtx[0][typeValue])
-            valuesToClassify.append(mtx[1][typeValue])
+        for positionValue in range(len(mtx[0])-1):
+            mtx[1][positionValue] = Frm.onlyNum(mtx[0][positionValue])
+            valuesToClassify.append(mtx[1][positionValue])
     return valuesToClassify
 
 #Well... this don't need explain
