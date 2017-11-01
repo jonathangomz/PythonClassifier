@@ -11,6 +11,9 @@ Created on Thu Sep 28 10:50:30 2017
 # Mass	   
 # Volumen 	
 # Class
+#
+#Note: ApacheSpark
+# ******   Split data for testing   ******
 #######################################################################
 ############################### IMPORTS ###############################
 #######################################################################
@@ -19,7 +22,7 @@ import sys
 sys.path.insert(0, '/Users/Jonathan/Desktop/Jonathan/Programacion/Python/PythonForClass/machinelearning/Ch02/Classifier')
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier as kNN 
-from sklearn import preprocessing, tree
+from sklearn import preprocessing, tree, svm, linear_model
 import Format as Frm
 
 ####################################################################################################
@@ -34,15 +37,8 @@ import Format as Frm
             KNeighborsClassifier
 """  
 
-#Train the program
-def trainWithData(dataValue, dataLabel, n=10):
-    valueNorm = preprocessing.normalize(dataValue, norm='l2')
-    neighbor = kNN(n_neighbors=n)
-    neighbor.fit(valueNorm, dataLabel)
-    return neighbor
-
 #Introduce the values to classify
-def inputValuesToClassify(mtx=None):
+def inputValuesToClassify(mtx=None, knowValuesFeatures=False):
     valuesToClassify = []
     i = 0
     if mtx is None:
@@ -59,22 +55,89 @@ def inputValuesToClassify(mtx=None):
         for positionValue in range(len(mtx[0])-1):
             mtx[1][positionValue] = Frm.onlyNum(mtx[0][positionValue])
             valuesToClassify.append(mtx[1][positionValue])
-    return valuesToClassify
+    if knowValuesFeatures:
+        return valuesToClassify, mtx
+    else:
+        return valuesToClassify
 
 #Well... this don't need explain
-def classifyKNN(neighbor, v2c):
-    ans = neighbor.predict([v2c])
+def classifyKnn(dataValue, dataLabel, v2c, n=10):
+    knnClas = kNN(n_neighbors=n)
+    valueNorm = preprocessing.normalize(dataValue, norm='l2')
+    knnClas.fit(valueNorm, dataLabel)
+    ans = knnClas.predict([v2c])
     return ans                
 
-"""
-            logRegres, Tree, Bayes
-"""
-
-def treeClas(dataValue, dataLabel, v2c):
-    treecls = tree.DecisionTreeClassifier()
-    treecls = treecls.fit(dataValue, dataLabel)
-    ans = treecls.predict([v2c])
+def classifyTree(dataValue, dataLabel, v2c):
+    treeClas = tree.DecisionTreeClassifier()
+    dataValue = preprocessing.normalize(dataValue, norm='l2')
+    treeClas.fit(dataValue, dataLabel)
+    ans = treeClas.predict([v2c])
     return ans
+
+def classifySVM(dataValue, dataLabel, v2c):
+    svmClas = svm.SVC()
+    dataValue = preprocessing.normalize(dataValue, norm='l2')
+    svmClas.fit(dataValue, dataLabel)
+    ans = svmClas.predict([v2c])
+    return ans
+
+def classifyLogReg(dataValue, dataLabel, v2c):
+    logisticClas = linear_model.LogisticRegression(C=1e5)
+    dataValue = preprocessing.normalize(dataValue, norm='l2')
+    logisticClas.fit(dataValue, dataLabel)
+    ans = logisticClas.predict([v2c])
+    return ans
+
+#Testing classifiers
+def testClassifiers(mtxValues, mtxLabels, checkClassifier="", porcentaje=0.66):
+    numPorcentaje = int(len(mtxValues)*porcentaje)
+    mtxValuesTest = mtxValues[0:numPorcentaje]
+    mtxLabelsTest = mtxLabels[0:numPorcentaje]
+    mtxAnsTest = []
+    ansClassifier = 0.0
+    #Evalua los clasificadores
+    print(checkClassifier)
+    for x in xrange(len(mtxValuesTest)):
+        if checkClassifier is "KNN":
+            ansClassifier = classifyKnn(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+        elif checkClassifier == "LogReg":
+            ansClassifier = classifyLogReg(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+        elif checkClassifier == "SVM":
+            ansClassifier = classifySVM(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+        elif checkClassifier == "Tree":
+            ansClassifier = classifyTree(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+        elif checkClassifier == "":
+            ansClassifierKnn = classifyKnn(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+            ansClassifierLogReg = classifyLogReg(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+            ansClassifierSVM = classifySVM(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+        else:
+            ansClassifier = 0.0
+            print("Nombre de clasificador incorrecto. Opciones: KNN, LogReg y SVM.")
+            break
+        if checkClassifier == "":
+            ansClassifier = -1
+            mtxAnsTest.append([ansClassifierKnn, ansClassifierLogReg, ansClassifierSVM])
+        else:
+            if ansClassifier != 0.0:
+                mtxAnsTest.append(ansClassifier)
+            else:
+                print("Error")
+    countError = 0.0
+    testMtx = []
+    if ansClassifier == 0.0:
+        return testMtx, 0.0
+    else:
+        #junta la matriz de las respuestas con la del los labels del dataset
+        for x in xrange(len(mtxAnsTest)):
+            if(mtxAnsTest[x][0] != mtxLabels[x]):
+                countError += 1
+            if checkClassifier == "":
+                for y in xrange(len(mtxAnsTest[0])):
+                    testMtx.append([mtxAnsTest[x][y][0], mtxAnsTest[x][y][0], mtxAnsTest[x][y][0], mtxLabels[x]])
+            else:
+                testMtx.append([mtxAnsTest[x][0], mtxLabels[x]])
+        return testMtx, float(countError/float(numPorcentaje))
 
 #####################################################################
 ############################### Extras ##############################

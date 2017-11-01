@@ -40,7 +40,6 @@ def file2matrixStr(filename, quitHeaders=False):
             classData = []  
             classLabel = []                        
             fr = open(filename)
-            print(quitHeaders)
             if quitHeaders:
                 fr.readline()
             index = 0
@@ -300,7 +299,6 @@ class Documento:
                 else:
                     features = inputTH()
                 try:
-                    print(tableHeadersAreOk)
                     self.values, self.labels, self.dic = file2matrix(self.filename, tableHeadersAreOk)
                 except Exception, e:
                     print("Error al obtener valores y etiquetas. [Documento]", e[0])
