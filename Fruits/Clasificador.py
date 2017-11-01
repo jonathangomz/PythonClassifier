@@ -24,6 +24,12 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier as kNN 
 from sklearn import preprocessing, tree, svm, linear_model
 import Format as Frm
+from sklearn.dummy import DummyClassifier
+
+#>>> clf = DummyClassifier(strategy='most_frequent',random_state=0)
+#>>> clf.fit(X_train, y_train)
+#DummyClassifier(constant=None, random_state=0, strategy='most_frequent')
+#>>> clf.score(X_test, y_test)  
 
 ####################################################################################################
 ####################################################################################################
@@ -76,7 +82,7 @@ def classifyTree(dataValue, dataLabel, v2c):
     return ans
 
 def classifySVM(dataValue, dataLabel, v2c):
-    svmClas = svm.SVC()
+    svmClas = svm.SVC(kernel='rbf', C=1)
     dataValue = preprocessing.normalize(dataValue, norm='l2')
     svmClas.fit(dataValue, dataLabel)
     ans = svmClas.predict([v2c])
@@ -97,20 +103,20 @@ def testClassifiers(mtxValues, mtxLabels, checkClassifier="", porcentaje=0.66):
     mtxAnsTest = []
     ansClassifier = 0.0
     #Evalua los clasificadores
-    print(checkClassifier)
     for x in xrange(len(mtxValuesTest)):
+        val = mtxValuesTest[x]
         if checkClassifier is "KNN":
-            ansClassifier = classifyKnn(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+            ansClassifier = classifyKnn(mtxValuesTest, mtxLabelsTest, val)
         elif checkClassifier == "LogReg":
-            ansClassifier = classifyLogReg(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+            ansClassifier = classifyLogReg(mtxValuesTest, mtxLabelsTest, val)
         elif checkClassifier == "SVM":
-            ansClassifier = classifySVM(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+            ansClassifier = classifySVM(mtxValuesTest, mtxLabelsTest, val)
         elif checkClassifier == "Tree":
-            ansClassifier = classifyTree(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+            ansClassifier = classifyTree(mtxValuesTest, mtxLabelsTest, val)
         elif checkClassifier == "":
-            ansClassifierKnn = classifyKnn(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
-            ansClassifierLogReg = classifyLogReg(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
-            ansClassifierSVM = classifySVM(mtxValuesTest, mtxLabelsTest, mtxValuesTest[x])
+            ansClassifierKnn = classifyKnn(mtxValuesTest, mtxLabelsTest, val)
+            ansClassifierLogReg = classifyLogReg(mtxValuesTest, mtxLabelsTest, val)
+            ansClassifierSVM = classifySVM(mtxValuesTest, mtxLabelsTest, val)
         else:
             ansClassifier = 0.0
             print("Nombre de clasificador incorrecto. Opciones: KNN, LogReg y SVM.")

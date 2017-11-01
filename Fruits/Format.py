@@ -245,17 +245,23 @@ def checkFormat(filename):
         return False, 0
     
 #Verify that the input value is a number
-def onlyNum(count=None):      					
+def onlyNum(feature=None):      					
     while True:
-        if count is None:
-            texto = raw_input("Ingresa el valor\n")
+        if feature is None:
+            try:
+                texto = raw_input("Ingresa el valor\n")
+            except KeyboardInterrupt, e:
+                print("Se interrumpió el proceso")
         else:
-            texto = raw_input("Ingresa el valor de "+ str(count) + "\n")            
+            try:
+                texto = raw_input("Ingresa el valor de "+ str(feature) + "\n")            
+            except KeyboardInterrupt, e:
+                print("Se interrumpió el proceso")
         try:
             num = float(texto)
             break
         except ValueError:
-            print "Solo se aceptan numeros"
+            print "Solo se aceptan numeros: "
     return num
 
 #################################################################################################
