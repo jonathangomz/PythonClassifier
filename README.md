@@ -1,4 +1,5 @@
 # PythonClassifier
+[![BCH compliance](https://bettercodehub.com/edge/badge/jonathangomz/PythonClassifier?branch=master)](https://bettercodehub.com/)
 
 #### Autor:
 _Jonathan Gómez_
