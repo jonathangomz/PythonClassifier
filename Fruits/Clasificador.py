@@ -20,16 +20,18 @@ Created on Thu Sep 28 10:50:30 2017
 
 import sys
 sys.path.insert(0, '/Users/Jonathan/Desktop/Jonathan/Programacion/Python/PythonForClass/machinelearning/Ch02/Classifier')
-import numpy as np
-from sklearn.neighbors import KNeighborsClassifier as kNN 
-from sklearn import preprocessing, tree, svm, linear_model
 import Format as Frm
+import numpy as np
+from sklearn import preprocessing
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.dummy import DummyClassifier
 
-#>>> clf = DummyClassifier(strategy='most_frequent',random_state=0)
-#>>> clf.fit(X_train, y_train)
-#DummyClassifier(constant=None, random_state=0, strategy='most_frequent')
-#>>> clf.score(X_test, y_test)  
+#clf = DummyClassifier(strategy='most_frequent',random_state=0)
+#clf.fit(X_train, y_train)
+#clf.score(X_test, y_test)  
 
 ####################################################################################################
 ####################################################################################################
@@ -38,19 +40,68 @@ from sklearn.dummy import DummyClassifier
 ################################                                    ################################
 ####################################################################################################
 ####################################################################################################
+#####################
+#####################
+""" Gloabal Variables """
+ans        = 0.0    #Used in classify() and inputValuesToClassify()
+score      = 0.0    #Used in accuracy()
+ValuesTest = []     #Used in accuracy()
+labelsTest = []     #Used in accuracy()
+#####################
+#####################
+###################### Classifiers ###################### 
+def knnClas(values, labels, n=10):
+    knn = KNeighborsClassifier(n_neighbors=n)
+    knn.fit(values, labels)
+    return knn
 
-"""
-            KNeighborsClassifier
-"""  
+def logregClas(values, labels, c=1e5):
+    LogReg = LogisticRegression(C=c)
+    LogReg.fit(values, labels)
+    return LogReg
 
-#Introduce the values to classify
+def svmClas(values, labels):
+    svm = SVC()
+    svm.fit(values, labels)
+    return svm
+
+def treeClas(values, labels):
+    tree = DecisionTreeClassifier()
+    tree.fit(values, labels)
+    return tree
+
+def dummyClas(values, labels):
+    dummy = DummyClassifier(strategy='most_frequent',random_state=0)
+    dummy.fit(values, labels)
+    return dummy
+
+###################### Classify ######################
+def classify(classifier, v2c):
+    ans = classifier.predict([v2c])
+    return ans
+
+###################### Accuracy ######################
+def accuracy(classifier, values, labels, porcentaje=0.66, testClassifier=False):
+    num = int(len(values)*porcentaje)
+    valuesTest = values[0:num]
+    labelsTest = labels[0:num]
+    score = classifier.score(valuesTest, labelsTest)
+    if testClassifier:
+        dummy = dummyClas(values, labels)
+        ansDummy = dummy.score(valuesTest, labelsTest)
+        return score, ansDummy
+    else:
+        return score
+
+###################### Input Values ######################
+#I think this dont need explain, the title is so explicit :P
 def inputValuesToClassify(mtx=None, knowValuesFeatures=False):
-    valuesToClassify = []
-    i = 0
+    val2cls = []
     if mtx is None:
+        i = 0
         while True:
             try:
-                valuesToClassify.append(Frm.onlyNum(i))
+                val2cls.append(Frm.onlyNum(i))
                 i += 1
                 ans = (raw_input("¿Terminaste de ingresar los valores? [y]\n"))
                 if ans == 'Y' or ans == 'y':
@@ -60,90 +111,130 @@ def inputValuesToClassify(mtx=None, knowValuesFeatures=False):
     else:
         for positionValue in range(len(mtx[0])-1):
             mtx[1][positionValue] = Frm.onlyNum(mtx[0][positionValue])
-            valuesToClassify.append(mtx[1][positionValue])
+            val2cls.append(mtx[1][positionValue])
     if knowValuesFeatures:
-        return valuesToClassify, mtx
+        return val2cls, mtx
     else:
-        return valuesToClassify
+        return val2cls
 
-#Well... this don't need explain
-def classifyKnn(dataValue, dataLabel, v2c, n=10):
-    knnClas = kNN(n_neighbors=n)
-    valueNorm = preprocessing.normalize(dataValue, norm='l2')
-    knnClas.fit(valueNorm, dataLabel)
-    ans = knnClas.predict([v2c])
-    return ans                
+#################################################################################################
+#################################################################################################     
+##################################                             ##################################
+##################################      Clase Classifiers      ##################################
+##################################                             ##################################
+#################################################################################################
+#################################################################################################
 
-def classifyTree(dataValue, dataLabel, v2c):
-    treeClas = tree.DecisionTreeClassifier()
-    dataValue = preprocessing.normalize(dataValue, norm='l2')
-    treeClas.fit(dataValue, dataLabel)
-    ans = treeClas.predict([v2c])
-    return ans
+class Classifiers:
+    """ Implementa cuatro clasificadores diferentes.
+        
+    Genera un objeto que incluye atributos que ayudan a combinar
+    cuatro diferentes clasificadores: kNN, Logistic Regression, SVM y 
+    Desicion Tree.
 
-def classifySVM(dataValue, dataLabel, v2c):
-    svmClas = svm.SVC(kernel='rbf', C=1)
-    dataValue = preprocessing.normalize(dataValue, norm='l2')
-    svmClas.fit(dataValue, dataLabel)
-    ans = svmClas.predict([v2c])
-    return ans
+    #Parámetros:
+    dataValues -- matrix que incluye los valores con los que se entrenaran los clasificadores.
+    dataLabels -- matrix que incluye las clases con los que se entrenaran los clasificadores.
+    classifier -- Clasificadores que se utilizarán. Predeterminado todos.
 
-def classifyLogReg(dataValue, dataLabel, v2c):
-    logisticClas = linear_model.LogisticRegression(C=1e5)
-    dataValue = preprocessing.normalize(dataValue, norm='l2')
-    logisticClas.fit(dataValue, dataLabel)
-    ans = logisticClas.predict([v2c])
-    return ans
+    #Atributos:
+    values          -- valores introducidos.
+    labels          -- clases introducidas.
+    val2cls         -- valores introducidos por el usuario.
+    mtxClas         -- valores introducidos por el usuario con la feature a la que pertenecen.
+    listClassifiers -- lista de clasificadores utilizados.
+    listAns         -- lista de clasificacciones hechas por los clasificadores usados.
+    listScore       -- lista de Scores resultantes de los clasificadores usados.
+    score           -- Score de un clasificador específico.
+    dummyAns        -- score del clasificador dummy.
 
-#Testing classifiers
-def testClassifiers(mtxValues, mtxLabels, checkClassifier="", porcentaje=0.66):
-    numPorcentaje = int(len(mtxValues)*porcentaje)
-    mtxValuesTest = mtxValues[0:numPorcentaje]
-    mtxLabelsTest = mtxLabels[0:numPorcentaje]
-    mtxAnsTest = []
-    ansClassifier = 0.0
-    #Evalua los clasificadores
-    for x in xrange(len(mtxValuesTest)):
-        val = mtxValuesTest[x]
-        if checkClassifier is "KNN":
-            ansClassifier = classifyKnn(mtxValuesTest, mtxLabelsTest, val)
-        elif checkClassifier == "LogReg":
-            ansClassifier = classifyLogReg(mtxValuesTest, mtxLabelsTest, val)
-        elif checkClassifier == "SVM":
-            ansClassifier = classifySVM(mtxValuesTest, mtxLabelsTest, val)
-        elif checkClassifier == "Tree":
-            ansClassifier = classifyTree(mtxValuesTest, mtxLabelsTest, val)
-        elif checkClassifier == "":
-            ansClassifierKnn = classifyKnn(mtxValuesTest, mtxLabelsTest, val)
-            ansClassifierLogReg = classifyLogReg(mtxValuesTest, mtxLabelsTest, val)
-            ansClassifierSVM = classifySVM(mtxValuesTest, mtxLabelsTest, val)
+    #Clasificadores:
+    dummy           -- clasificador Dummy.
+    knn             -- clasificador KNeighbor Nearest.
+    logreg          -- clasificadore Loigstic Regresion.
+    svm             -- clasificador Support Virtual Machine.
+    tree            -- clasificador Desicion Tree.
+
+
+    """
+    def __init__(self, dataValues, dataLabels, classifier=""):
+        self.values = preprocessing.normalize(dataValues, norm='l2')
+        self.labels = dataLabels
+        self.dummy = dummyClas(self.values, self.labels)
+        self.listClassifiers = {}
+        if classifier == "" or "KNN" in classifier:
+            self.knn = knnClas(self.values, self.labels)
+            self.listClassifiers['KNN'] = self.knn
+        if classifier == "" or "LogReg" in classifier:
+            self.logreg = logregClas(self.values, self.labels)
+            self.listClassifiers['logreg'] = self.logreg
+        if classifier == "" or "SVM" in classifier:
+            self.svm = svmClas(self.values, self.labels)
+            self.listClassifiers['svm'] = self.svm
+        if classifier == "" or "Tree" in classifier:
+            self.tree = treeClas(self.values, self.labels)
+            self.listClassifiers['Tree'] = self.tree
+        if self.listClassifiers == {}:
+            print("Ingresa un clasificador correcto [KNN, LogReg, SVM, Tree]")
+
+    def inputValuesToClassify(self, mtx=None, knowValuesFeatures=False):
+        """Ingresa los valores para clasificar.
+
+        Devuelve la lista de valores a evaluar. También puede regresar
+        una lista con cada característica a la que se agregó cada valor.
+
+        Parámetros:
+        mtx -- matríz con las características. Predeterminado ninguna.
+        knowValuesFeatures -- si se desea conocer el valor de cada característica. Predeterminado False.
+
+        """
+        if knowValuesFeatures:
+            self.val2cls, self.mtxClas = inputValuesToClassify(mtx, knowValuesFeatures)
         else:
-            ansClassifier = 0.0
-            print("Nombre de clasificador incorrecto. Opciones: KNN, LogReg y SVM.")
-            break
-        if checkClassifier == "":
-            ansClassifier = -1
-            mtxAnsTest.append([ansClassifierKnn, ansClassifierLogReg, ansClassifierSVM])
+            self.val2cls = inputValuesToClassify(mtx)
+
+    def classify(self, classifier=None):
+        """Predice la clase usando algún clasificador.
+        
+        Devuelve la clase resultante. También puede regresar un diccionario 
+        con los resultados de cada clasificador usado.
+
+        Parámetros:
+        classifier -- clasificador que se usará. Predeterminado todos.
+
+        """
+        if classifier != None:
+            global ans
+            ans = classify(classifier, self.val2cls)
+            return ans
         else:
-            if ansClassifier != 0.0:
-                mtxAnsTest.append(ansClassifier)
+            self.listAns = {}
+            for clas in self.listClassifiers:
+                self.listAns[clas] = self.classify(self.listClassifiers[clas])
+            return self.listAns
+
+    def accuracy(self, classifier=None, porcentaje=0.66, testClassifier=False):
+        """Calcula el promedio de eficiencia del clasificador.
+        
+        Devuelve el promedio de eficiencia de algún clasificador. Puede regresar
+        un diccionario con el promedio de eficiencia de cada clasificador usado.
+
+        Parámetros:
+        classifier -- clasificador que se usará. Predeterminado todos.
+        porcentaje -- porcentaje de los valores que usará para las pruebas. Predeterminado 66%.
+        testClassifier -- si se comparar con el clasificador Dummy. Predeterminado False.
+
+        """
+        if classifier != None:
+            if testClassifier:
+                self.score, self.dummyAns = accuracy(classifier, self.values, self.labels, testClassifier=True)
             else:
-                print("Error")
-    countError = 0.0
-    testMtx = []
-    if ansClassifier == 0.0:
-        return testMtx, 0.0
-    else:
-        #junta la matriz de las respuestas con la del los labels del dataset
-        for x in xrange(len(mtxAnsTest)):
-            if(mtxAnsTest[x][0] != mtxLabels[x]):
-                countError += 1
-            if checkClassifier == "":
-                for y in xrange(len(mtxAnsTest[0])):
-                    testMtx.append([mtxAnsTest[x][y][0], mtxAnsTest[x][y][0], mtxAnsTest[x][y][0], mtxLabels[x]])
-            else:
-                testMtx.append([mtxAnsTest[x][0], mtxLabels[x]])
-        return testMtx, float(countError/float(numPorcentaje))
+                self.score = accuracy(classifier)
+        else:
+            self.listScores = {}
+            for idClassifier in self.listClassifiers:
+                self.listScores[idClassifier] = accuracy(self.listClassifiers[idClassifier], self.values, self.labels, testClassifier=testClassifier)
+            return self.listScores
 
 #####################################################################
 ############################### Extras ##############################
@@ -158,18 +249,18 @@ def learn(v2l, l2l, values, labels):
     labels += [l2l[0]]
     values = np.vstack((values, v2l))
 
-######################## In waitlist ########################
-#                                                           #
-#    def rejectOutliersFromList(data, m = 2.):              #
-#        d = np.abs(data - np.median(data))                 #
-#        mdev = np.median(d)                                #
-#        s = d/mdev if mdev else 0                          #
-#        return data[s<m]                                   #
-#                                                           #
-#    def rejectOutliersFromMatrix(dataSet):                 #
-#        i = 0                                              #
-#        for column in dataSet[:,i]:                        #
-#            dataSet[:,i] = rejectOutliersFromList(column)  #
-#                                                           #
-#############################################################
+            ######################## In waitlist ########################
+            #                                                           #
+            #    def rejectOutliersFromList(data, m = 2.):              #
+            #        d = np.abs(data - np.median(data))                 #
+            #        mdev = np.median(d)                                #
+            #        s = d/mdev if mdev else 0                          #
+            #        return data[s<m]                                   #
+            #                                                           #
+            #    def rejectOutliersFromMatrix(dataSet):                 #
+            #        i = 0                                              #
+            #        for column in dataSet[:,i]:                        #
+            #            dataSet[:,i] = rejectOutliersFromList(column)  #
+            #                                                           #
+            #############################################################
     
