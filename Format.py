@@ -13,6 +13,7 @@ Created on Fri Oct 6 14:09:01 2017
 ############################### IMPORTS ###############################
 #######################################################################
 
+import os
 import numpy as np
 
 #######################################################################
@@ -39,7 +40,7 @@ def file2matrixStr(filename, quitHeaders=False):
         if numColumn != 0:
             classData = []  
             classLabel = []                        
-            fr = open(filename)
+            fr = open(os.path.join("Documents",filename))
             if quitHeaders:
                 fr.readline()
             index = 0
@@ -113,7 +114,7 @@ def sizes(filename, countColumn = True, countRows=True, check=False):
     if check:
         isOk,_ = checkFormat(filename)
     if isOk:
-        fr        = open(filename)
+        fr        = open(os.path.join("Documents",filename))
         numColumn = 0
         numLines  = 0
         if countColumn:
@@ -124,7 +125,7 @@ def sizes(filename, countColumn = True, countRows=True, check=False):
             else:
                 print("Error en el formato: Los datos deben de estar separados por Coma o Tab [3]")
         if countRows:
-            fr        = open(filename)
+            fr        = open(os.path.join("Documents",filename))
             numLines  = len(fr.readlines())
         fr.close()
         return numLines, numColumn
@@ -209,7 +210,7 @@ def checkHeader(filename, check=False):
     else:
         _,sptr = checkFormat(filename)      #only return the type of separator (sptr)
     if isOk:
-        fr           = open(filename)
+        fr           = open(os.path.join("Documents",filename))
         headerLine   = fr.readline().strip().split(sptr)
         for i in headerLine:
             try:
@@ -228,7 +229,7 @@ def checkHeader(filename, check=False):
 #Verify if are separated by Coma or Tab and return the type of separator
 def checkFormat(filename):
     try:
-        fr = open(filename)
+        fr = open(os.path.join("Documents",filename))
         if ',' not in fr.readline() and '\t' not in fr.readline():
             fr.close()
             print("Error en el formato: Los datos deben de estar separados por Coma o Tab [9]")
