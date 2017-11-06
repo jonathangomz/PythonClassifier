@@ -228,8 +228,10 @@ class Classifiers:
         if classifier != None:
             if testClassifier:
                 self.score, self.dummyAns = accuracy(classifier, self.values, self.labels, testClassifier=True)
+                return self.score, self.dummyAns
             else:
                 self.score = accuracy(classifier)
+                return self.score
         else:
             self.listScores = {}
             for idClassifier in self.listClassifiers:
