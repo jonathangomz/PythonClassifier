@@ -13,4 +13,5 @@ Oh, a month exactly
 
 ### Info
 
-A little project for my IA's class.
+A little project for my IA's class and more stuff and tests.
+_Files with 'Test' only are... test or stuff which dosen't matter_

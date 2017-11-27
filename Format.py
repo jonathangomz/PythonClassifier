@@ -15,21 +15,26 @@ Created on Fri Oct 6 14:09:01 2017
 
 import os
 import numpy as np
+import codecs
 
 #######################################################################
 ########################### MAIN FUNCTIONS ############################
 #######################################################################
+####### GLOBAL VARIABLES #######
+tableHeadersAreOk = False
 
 #Pass the data from file to a matrix using other three functions.
-def file2matrix(filename, quitHeaders=False):
-    v, l = file2matrixStr(filename, quitHeaders)
+def file2matrix(filename, quitHeaders=False, changeWords=True):
+    v, l, allData = file2matrixStr(filename, quitHeaders)
     if v != 0 and l != 0:
-        v,dic = wrd2num(v)
-        v = str2float(v)
-        return v, l, dic
+        if changeWords:
+            v,dic = wrd2num(v)
+            v = str2float(v)    #I dont remember why i do this function. The values put in float from the start.
+        allData = str2float(allData)
+        return v, l, dic, allData
     else:
         print("Error: 0 columnas [1.1]")
-        return 0,0
+        return 0,0,0,0
 
 #######################################################################
 #Make, with the file, a matrix with the values of type str.
@@ -38,36 +43,38 @@ def file2matrixStr(filename, quitHeaders=False):
     if chk:
         numLines, numColumn = sizes(filename)
         if numColumn != 0:
+            allData = []
             classData = []  
-            classLabel = []                        
-            fr = open(os.path.join("Documents",filename))
+            classLabel = []               
+            fr = codecs.open(os.path.join("Documents",filename), 'r', 'utf-8')
             if quitHeaders:
                 fr.readline()
             index = 0
             for line in fr.readlines():
                 line = line.strip()
                 listFromLine = line.split(frm)
+                allData.append(listFromLine)
                 classData.append(listFromLine[0:numColumn])
                 classLabel.append(listFromLine[-1])
                 index += 1
-            return classData,classLabel
+            return classData,classLabel, allData
         else:
             print("Error: 0 columnas [1]")
-            return 0, 0
+            return 0, 0, 0
     else:
         print "No pasó el chequeo del formato [2]"
-        return 0, 0
+        return 0, 0, 0
 
 #Change the words in the file to numbers 
 def wrd2num(values):
-    vCu = []                            #value Clean unorder
-    valuesCleanOrder = []
-    dic = []
+    valuesCleanUnorder  = []         #value Clean unorder
+    valuesCleanOrder    = []
+    dic                 = []
     for i in range(len(values[0])):
-        arr = [t[i] for t in values]
-        dicVal = {}
-        arr2 = []
-        count = 0
+        arr                 = [t[i] for t in values]
+        dicVal              = {}
+        arrContainerTemp    = []
+        count               = 0
         for t in arr:
             try:
                 t = float(t)
@@ -75,18 +82,18 @@ def wrd2num(values):
                 pass
             if t not in dicVal and not isinstance(t, float):
                 if t == '':             #if contains an empty space change it with cero
-                    arr2.append(0)
+                    arrContainerTemp.append(0)
                 else:
-                    arr2.append(count+1)
+                    arrContainerTemp.append(count+1)
                     dicVal[t] = count+1
                     count += 1
             elif isinstance(t, float):  #if is a number dont change it
-                arr2.append(t)
-            else:
-                arr2.append(dicVal[t])
+                arrContainerTemp.append(t)
+            else:                       #if already are in the array just put the value asigned to that variable
+                arrContainerTemp.append(dicVal[t])
         dic.append(dicVal)
-        vCu.append(arr2)
-    tupO = zip(*vCu[::-1])
+        valuesCleanUnorder.append(arrContainerTemp)
+    tupO = zip(*valuesCleanUnorder[::-1])
     arrT = []
     for i in tupO:
         arrT = [t for t in reversed(i)]
@@ -94,13 +101,16 @@ def wrd2num(values):
     return valuesCleanOrder, dic
 
 #change the type of the values to float
-def str2float(values):
+def str2float(data):
     y = 0
-    v = [i[:] for i in values]
+    v = [i[:] for i in data]
     for i in v:
         x = 0
         for t in i:
-            v[y][x] = float(t)
+            try:
+                v[y][x] = float(t)
+            except:
+                v[y][x] = t
             x += 1
         y += 1
     return v
@@ -283,30 +293,34 @@ def onlyNum(feature=None):
 """
 class Documento:
     """Documento formateado para clasificar"""
-    def __init__(self, nameFile=None):
+    def __init__(self, nameFile=None, changeWords=True):
         if nameFile is None:
-            self.width          = 0
-            self.height         = 0
+            self.width          = 0 #columns
+            self.height         = 0 #lines
             self.features       = []
             self.values         = []
+            self.allData        = []
             self.dic            = {}
             self.labels         = []
+            self.filename       = 'None'
         else:
             isOk,_          = checkFormat(nameFile)
             self.filename   = nameFile
             if isOk:
                 self.filename               = nameFile
-                self.width, self.height     = sizes(self.filename)
-                tableHeadersAreOk, headers = checkHeader(self.filename)
-                if askHeader():                    
+                self.height, self.width     = sizes(self.filename)
+                global tableHeadersAreOk
+                if askHeader():
+                    tableHeadersAreOk, headers = checkHeader(self.filename)
                     if tableHeadersAreOk:
                         self.features = inputTH(_,headers)
                     else:
                         self.features = inputTH(self.filename)
                 else:
-                    features = inputTH()
+                    self.features = inputTH()
                 try:
-                    self.values, self.labels, self.dic = file2matrix(self.filename, tableHeadersAreOk)
+                    self.values, self.labels, self.dic, self.allData = file2matrix(self.filename, tableHeadersAreOk, changeWords)
+                    tableHeadersAreOk = False
                 except Exception, e:
                     print("Error al obtener valores y etiquetas. [Documento]", e[0])
             #else:
