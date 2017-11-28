@@ -12,7 +12,7 @@ import codecs
 '''
 ###
 '''
-		Extraer datos asistencias.
+		1.- Extraer datos asistencias.
 '''
 ###
 '''
@@ -40,7 +40,7 @@ f.close()
 '''
 ###
 '''
-		Testing the result file
+		2.- Testing the result file
 '''
 ###
 '''
@@ -53,7 +53,7 @@ print(fr.readline().split(","))
 '''
 ###
 '''
-		Juntar datos.
+		3.- Juntar datos.
 '''
 ###
 '''
