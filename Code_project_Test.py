@@ -7,9 +7,13 @@
 '''
 import re
 import os
+
 from Format import Documento
-import codecs
 '''
+import codecs
+import Format as Fr
+from datetime import datetime
+import usefull_functions as uf
 ###
 '''
 		1.- Extraer datos asistencias.
@@ -102,16 +106,62 @@ for data in array:
 	f.write('\n')
 f.close()
 '''
+#
+'''
+		4.- Separar fecha.
 '''
 #
+today = datetime.today()
+date_format = '%d/%m/%y'
+
+fr = codecs.open('newFile.txt', 'r', 'utf-8')
+print(fr.readline().strip().split(','))
+for line in fr.readlines():
+ 	line = line.strip()
+ 	listFromLine = line.split(',')
+ 	date = listFromLine[1].split('/') 	
+ 	if int(date[2])==17:
+ 		date_birth = listFromLine[5].split('/')
+ 		if date_birth[2] <= '17':
+ 			birth = datetime((2000+int(date_birth[2])), int(date_birth[0]), int(date_birth[1]), 0, 0, 0)
+ 		else:
+ 			birth = datetime((1900+int(date_birth[2])), int(date_birth[0]), int(date_birth[1]), 0, 0, 0)
+ 		diff  = today - birth
+ 		years = str(diff/365).split(' ')[0]
+ 		if int(years) not in list_edades:
+ 			list_edades.append(int(years))
+ 		order.append([listFromLine[4], int(years), listFromLine[3].strip(), listFromLine[2], int(date[0]), int(date[1]), uf.datetoday(int(date[0]), int(date[1]), 2000+int(date[2]))])
+
+order, dic = Fr.wrd2num(order)
+print(list_edades)
+'''
+f = codecs.open('newFile2.csv', 'w+', 'utf-8')
+
+for data in order:
+	count = 0
+	for value in data:
+		if count != 6:
+			f.write('%s, ' %value)
+		else:
+			f.write('%s' %value)
+		count += 1
+	f.write('\n')
+f.close()
+#sexo, edad, carrera, tipo_comida, dia_mes, mes, dia_semana
+for i in dic:
+	print(i)
+'''
+#
+'''
 	Next steps:
 	 	-> separate the date.
 	 	-> make a function which detect the day of any date.
 		-> think which column will be the labels.
 		-> think, think, think... think a lot. 
 		-> Fuck.
-#
 '''
+#
+
 
 
 

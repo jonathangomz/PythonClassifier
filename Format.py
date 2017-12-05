@@ -77,20 +77,28 @@ def wrd2num(values):
         count               = 0
         for t in arr:
             try:
-                t = float(t)
+                t = int(t)
             except:
                 pass
-            if t not in dicVal and not isinstance(t, float):
+            if t not in dicVal.values() and not isinstance(t, int):
                 if t == '':             #if contains an empty space change it with cero
                     arrContainerTemp.append(0)
                 else:
                     arrContainerTemp.append(count+1)
-                    dicVal[t] = count+1
+                    dicVal[count+1] = t
                     count += 1
-            elif isinstance(t, float):  #if is a number dont change it
+            elif isinstance(t, int):  #if is a number dont change it
                 arrContainerTemp.append(t)
             else:                       #if already are in the array just put the value asigned to that variable
-                arrContainerTemp.append(dicVal[t])
+                key = ''
+                for i in dicVal:
+                    if t == dicVal[i]:
+                        key = i
+                        break
+                try:
+                    arrContainerTemp.append(key)
+                except Exception, e:
+                    print("Esa key no se encuentra en el diccionario", e[0])
         dic.append(dicVal)
         valuesCleanUnorder.append(arrContainerTemp)
     tupO = zip(*valuesCleanUnorder[::-1])
@@ -308,14 +316,14 @@ class Documento:
             self.filename   = nameFile
             if isOk:
                 self.filename               = nameFile
-                self.height, self.width     = sizes(self.filename)
+                self.height, self.width     = sizes(filename=self.filename)
                 global tableHeadersAreOk
                 if askHeader():
-                    tableHeadersAreOk, headers = checkHeader(self.filename)
+                    tableHeadersAreOk, headers = checkHeader(filename=self.filename)
                     if tableHeadersAreOk:
-                        self.features = inputTH(_,headers)
+                        self.features = inputTH(mtx=headers)
                     else:
-                        self.features = inputTH(self.filename)
+                        self.features = inputTH(filename=self.filename)
                 else:
                     self.features = inputTH()
                 try:
@@ -323,13 +331,8 @@ class Documento:
                     tableHeadersAreOk = False
                 except Exception, e:
                     print("Error al obtener valores y etiquetas. [Documento]", e[0])
-            #else:
-                #self.width          = 0
-                #self.height         = 0
-                #self.tableHeaders   = []
-                #self.values         = []
-                #self.dic            = {}
-                #self.labels         = []
+            else:
+                print("Formato incorrecto [Documento]")
     def seeAll(self):
         for i in self.__dict__:
             print(str(i)+"\t\t "+str(self.__dict__[i])+"\t "+str(type(i)))
