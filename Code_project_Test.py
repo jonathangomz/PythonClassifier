@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+#author: Jonathan Gomez
+#date: 10/10/2017
+#	util:
+'''
+	num_filas = 87,510
+'''
 ###
 '''
 		Imports.
