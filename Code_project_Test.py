@@ -132,6 +132,7 @@ for line in fr.readlines():
  			list_edades.append(int(years))
  		order.append([listFromLine[4], int(years), listFromLine[3].strip(), listFromLine[2], int(date[0]), int(date[1]), uf.datetoday(int(date[0]), int(date[1]), 2000+int(date[2]))])
 
+# Intercambiar palabras por números y obtener diccionario
 order, dic = Fr.wrd2num(order)
 print(list_edades)
 '''
